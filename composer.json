@@ -1,0 +1,45 @@
+{
+    "name": "glaucojrcarvalho/sql-console",
+    "version": "1.0.0",
+    "description": "Browser SQL console for Laravel with safe-guarded execution and multi-connection support.",
+    "keywords": ["laravel", "sql", "console", "database", "mysql", "oracle"],
+    "homepage": "https://github.com/glaucojrcarvalho/laravel-sql-console",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Glauco Carvalho"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0",
+        "illuminate/routing": "^11.0",
+        "illuminate/view": "^11.0",
+        "illuminate/http": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Glaucojrcarvalho\\SqlConsole\\": "src/"
+        }
+    },
+    "support": {
+        "issues": "https://github.com/glaucojrcarvalho/laravel-sql-console/issues",
+        "source": "https://github.com/glaucojrcarvalho/laravel-sql-console"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/glaucojrcarvalho/laravel-sql-console"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Glaucojrcarvalho\\SqlConsole\\SqlConsoleServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
