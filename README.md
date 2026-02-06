@@ -122,6 +122,32 @@ INSERT INTO sql_console_allowed_users (user_identifier, is_active, can_write, cr
 VALUES ('1', 1, 0, NOW(), NOW());
 ```
 
+### Manage Allowlist via Artisan (No Workbench)
+
+Allow user (read-only):
+
+```bash
+php artisan sql-console:allow 1
+```
+
+Allow user with write permission:
+
+```bash
+php artisan sql-console:allow 1 --write
+```
+
+Revoke user (set inactive):
+
+```bash
+php artisan sql-console:revoke 1
+```
+
+Revoke user and delete row:
+
+```bash
+php artisan sql-console:revoke 1 --delete
+```
+
 ## Security Notes
 
 - This tool is intentionally restricted to one SQL statement at a time.

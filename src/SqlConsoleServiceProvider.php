@@ -2,6 +2,8 @@
 
 namespace Glaucojrcarvalho\SqlConsole;
 
+use Glaucojrcarvalho\SqlConsole\Console\Commands\SqlConsoleAllowUserCommand;
+use Glaucojrcarvalho\SqlConsole\Console\Commands\SqlConsoleRevokeUserCommand;
 use Illuminate\Support\ServiceProvider;
 
 class SqlConsoleServiceProvider extends ServiceProvider
@@ -28,5 +30,12 @@ class SqlConsoleServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/sql-console.php', 'sql-console');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                SqlConsoleAllowUserCommand::class,
+                SqlConsoleRevokeUserCommand::class,
+            ]);
+        }
     }
 }
