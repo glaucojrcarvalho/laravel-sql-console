@@ -8,15 +8,15 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Glauco Carvalho"
+            "name": "Glauco Júnior Carvalho"
         }
     ],
     "require": {
         "php": "^8.2",
-        "illuminate/support": "^11.0",
-        "illuminate/routing": "^11.0",
-        "illuminate/view": "^11.0",
-        "illuminate/http": "^11.0"
+        "illuminate/support": "^10.0|^11.0",
+        "illuminate/routing": "^10.0|^11.0",
+        "illuminate/view": "^10.0|^11.0",
+        "illuminate/http": "^10.0|^11.0"
     },
     "autoload": {
         "psr-4": {
