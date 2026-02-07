@@ -1,6 +1,5 @@
 {
     "name": "glaucojrcarvalho/sql-console",
-    "version": "1.0.0",
     "description": "Browser SQL console for Laravel with safe-guarded execution and multi-connection support.",
     "keywords": ["laravel", "sql", "console", "database", "mysql", "oracle"],
     "homepage": "https://github.com/glaucojrcarvalho/laravel-sql-console",
@@ -27,12 +26,6 @@
         "issues": "https://github.com/glaucojrcarvalho/laravel-sql-console/issues",
         "source": "https://github.com/glaucojrcarvalho/laravel-sql-console"
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/glaucojrcarvalho/laravel-sql-console"
-        }
-    ],
     "extra": {
         "laravel": {
             "providers": [
