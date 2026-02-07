@@ -15,14 +15,14 @@
 ## Requirements
 
 - PHP 8.2+
-- Laravel 11+
+- Laravel 10, 11 or 12
 
 ## Installation
 
 ### Option 1: Packagist (recommended after publish)
 
 ```bash
-composer require glaucojrcarvalho/sql-console:^1.0
+composer require glaucojrcarvalho/sql-console:^1.1
 php artisan vendor:publish --tag=sql-console-config
 ```
 
@@ -30,7 +30,7 @@ php artisan vendor:publish --tag=sql-console-config
 
 ```bash
 composer config repositories.glaucojrcarvalho-sql-console vcs https://github.com/glaucojrcarvalho/laravel-sql-console.git
-composer require glaucojrcarvalho/sql-console:^1.0
+composer require glaucojrcarvalho/sql-console:^1.1
 php artisan vendor:publish --tag=sql-console-config
 ```
 
