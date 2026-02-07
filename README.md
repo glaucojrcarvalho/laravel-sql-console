@@ -161,3 +161,24 @@ php artisan sql-console:revoke 1 --delete
 2. Create a semantic tag (example: `v1.0.0`)
 3. Register/update repository on Packagist
 4. For each new release, push a new tag (`v1.0.1`, `v1.1.0`, etc.)
+
+## Release Notes
+
+- Do not define `version` in `composer.json`.
+- Package versions are controlled by Git tags (`v1.1.3`, `v1.1.4`, ...).
+- After pushing a new tag, trigger update on Packagist.
+
+## Troubleshooting Packagist
+
+If Packagist shows:
+
+`tag (...) does not match version (...) in composer.json`
+
+it means old tags were created when a fixed `version` field existed in `composer.json`.
+
+Fix:
+
+1. Ensure `composer.json` has no `version` field.
+2. Commit and push.
+3. Create a new tag (do not reuse old tags).
+4. Update the package on Packagist.
