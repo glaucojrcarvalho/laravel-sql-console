@@ -98,7 +98,12 @@ class QueryConsoleController extends Controller
                 ]);
             }
 
-            $bindings = $this->parseBindings($bindingsRaw);
+            if ($this->sqlHasPlaceholders($normalizedSql)) {
+                $bindings = $this->parseBindings($bindingsRaw);
+            } else {
+                $bindings = [];
+                $bindingsRaw = '';
+            }
             $connection = DB::connection($validated['connection']);
 
             $readTypes = config('sql-console.read_statement_types', ['select', 'with', 'show', 'describe', 'desc']);
@@ -268,6 +273,12 @@ class QueryConsoleController extends Controller
         }
 
         return $bindings;
+    }
+
+    private function sqlHasPlaceholders(string $sql): bool
+    {
+        return str_contains($sql, '?')
+            || preg_match('/(?<!:):[a-zA-Z_][a-zA-Z0-9_]*/', $sql) === 1;
     }
 
     private function normalizeSql(string $sql): string

@@ -70,7 +70,7 @@
 
             <div class="mb-5">
                 <label class="form-label">Bindings (JSON)</label>
-                <textarea class="form-control font-monospace" rows="6" name="bindings">{{ $bindings }}</textarea>
+                <textarea class="form-control font-monospace" id="sql-console-bindings" rows="6" name="bindings">{{ $bindings }}</textarea>
                 <div class="form-text">Example: <code>{"id": 123, "status": 2}</code></div>
             </div>
 
@@ -103,10 +103,11 @@
     const container = document.getElementById('sql-console-tables');
     const search = document.getElementById('sql-console-table-search');
     const query = document.getElementById('sql-console-query');
+    const bindings = document.getElementById('sql-console-bindings');
     const tablesUrl = @json(route('admin.sql.console.tables'));
     const canTruncate = container?.dataset.canTruncate === '1';
 
-    if (!connection || !container || !search || !query) {
+    if (!connection || !container || !search || !query || !bindings) {
         return;
     }
 
@@ -171,6 +172,7 @@
         query.value = button.dataset.action === 'truncate'
             ? `TRUNCATE TABLE ${button.dataset.table}`
             : `SELECT *\nFROM ${button.dataset.table}`;
+        bindings.value = '';
         query.focus();
     });
 })();
