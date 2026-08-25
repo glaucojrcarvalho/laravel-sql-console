@@ -31,9 +31,10 @@ return [
 
     'max_rows' => 200,
     'require_write_confirmation' => true,
+    'allow_truncate' => true,
 
     'read_statement_types' => ['select', 'with', 'show', 'describe', 'desc'],
-    'write_statement_types' => ['insert', 'update', 'delete'],
+    'write_statement_types' => ['insert', 'update', 'delete', 'truncate'],
 
-    'blocked_keywords' => ['drop', 'truncate', 'alter', 'create', 'grant', 'revoke', 'rename'],
+    'blocked_keywords' => ['drop', 'alter', 'create', 'grant', 'revoke', 'rename'],
 ];

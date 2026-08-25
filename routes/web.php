@@ -9,5 +9,6 @@ Route::group([
     'as' => 'admin.sql.console.',
 ], static function () {
     Route::get('', [QueryConsoleController::class, 'index'])->name('index');
+    Route::get('tables', [QueryConsoleController::class, 'tables'])->name('tables');
     Route::post('run', [QueryConsoleController::class, 'run'])->name('run');
 });

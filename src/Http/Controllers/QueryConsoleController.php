@@ -20,21 +20,47 @@ class QueryConsoleController extends Controller
         return view($view, array_merge($data, ['layout' => $layout]));
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorizeAccess();
 
         $connections = $this->availableConnections();
         $defaultConnection = array_key_first($connections) ?? config('database.default');
+        $requestedConnection = (string)$request->query('connection', '');
+        $selectedConnection = array_key_exists($requestedConnection, $connections)
+            ? $requestedConnection
+            : old('connection', $defaultConnection);
+        $tableCatalog = $this->tableCatalog($selectedConnection);
 
         return $this->render([
             'connections' => $connections,
-            'selectedConnection' => old('connection', $defaultConnection),
+            'selectedConnection' => $selectedConnection,
+            'tables' => $tableCatalog['tables'],
+            'tablesError' => $tableCatalog['error'],
+            'canTruncate' => config('sql-console.allow_truncate', true) && $this->canWrite(),
             'sql' => old('sql', "SELECT *\nFROM users\nWHERE id = :id"),
             'bindings' => old('bindings', "{\n  \"id\": 1\n}"),
             'result' => null,
             'errorMessage' => null,
         ]);
+    }
+
+    public function tables(Request $request)
+    {
+        $this->authorizeAccess();
+
+        $connections = $this->availableConnections();
+        $validated = $request->validate([
+            'connection' => 'required|string|in:'.implode(',', array_keys($connections)),
+        ]);
+
+        $catalog = $this->tableCatalog($validated['connection']);
+
+        if ($catalog['error'] !== null) {
+            return response()->json(['message' => $catalog['error']], 422);
+        }
+
+        return response()->json(['tables' => $catalog['tables']]);
     }
 
     public function run(Request $request)
@@ -57,7 +83,7 @@ class QueryConsoleController extends Controller
             $normalizedSql = $this->normalizeSql($sql);
             $statementType = $this->detectStatementType($normalizedSql);
 
-            $writeTypes = config('sql-console.write_statement_types', ['insert', 'update', 'delete']);
+            $writeTypes = $this->writeStatementTypes();
             $isWriteStatement = in_array($statementType, $writeTypes, true);
 
             if ($isWriteStatement && !$this->canWrite()) {
@@ -68,7 +94,7 @@ class QueryConsoleController extends Controller
 
             if ($isWriteStatement && config('sql-console.require_write_confirmation', true) && ($validated['confirm_write'] ?? null) !== '1') {
                 throw ValidationException::withMessages([
-                    'confirm_write' => 'To run INSERT/UPDATE/DELETE you must check "I confirm this write query".',
+                    'confirm_write' => 'To run a write statement you must check "I confirm this write query".',
                 ]);
             }
 
@@ -105,6 +131,7 @@ class QueryConsoleController extends Controller
             return $this->render([
                 'connections' => $connections,
                 'selectedConnection' => $validated['connection'],
+                ...$this->tableViewData($validated['connection']),
                 'sql' => $sql,
                 'bindings' => $bindingsRaw,
                 'result' => $result,
@@ -116,6 +143,7 @@ class QueryConsoleController extends Controller
             return $this->render([
                 'connections' => $connections,
                 'selectedConnection' => $validated['connection'],
+                ...$this->tableViewData($validated['connection']),
                 'sql' => $sql,
                 'bindings' => $bindingsRaw,
                 'result' => null,
@@ -195,6 +223,36 @@ class QueryConsoleController extends Controller
         return $connections;
     }
 
+    private function tableViewData(string $connectionName): array
+    {
+        $catalog = $this->tableCatalog($connectionName);
+
+        return [
+            'tables' => $catalog['tables'],
+            'tablesError' => $catalog['error'],
+            'canTruncate' => config('sql-console.allow_truncate', true) && $this->canWrite(),
+        ];
+    }
+
+    private function tableCatalog(string $connectionName): array
+    {
+        try {
+            $connection = DB::connection($connectionName);
+            $grammar = $connection->getQueryGrammar();
+            $tableNames = $connection->getSchemaBuilder()->getTableListing();
+            natcasesort($tableNames);
+
+            $tables = array_map(static fn (string $table): array => [
+                'name' => $table,
+                'quoted' => $grammar->wrapTable($table),
+            ], array_values($tableNames));
+
+            return ['tables' => $tables, 'error' => null];
+        } catch (Throwable $e) {
+            return ['tables' => [], 'error' => $e->getMessage()];
+        }
+    }
+
     private function parseBindings(string $bindingsRaw): array
     {
         $trimmed = trim($bindingsRaw);
@@ -232,7 +290,14 @@ class QueryConsoleController extends Controller
             ]);
         }
 
-        $blockedKeywords = config('sql-console.blocked_keywords', ['drop', 'truncate', 'alter', 'create', 'grant', 'revoke', 'rename']);
+        $blockedKeywords = config('sql-console.blocked_keywords', ['drop', 'alter', 'create', 'grant', 'revoke', 'rename']);
+        if (config('sql-console.allow_truncate', true)) {
+            $blockedKeywords = array_values(array_filter(
+                $blockedKeywords,
+                static fn (string $keyword): bool => strtolower($keyword) !== 'truncate'
+            ));
+        }
+
         if (!empty($blockedKeywords) && preg_match('/\b('.implode('|', array_map('preg_quote', $blockedKeywords)).')\b/i', $clean) === 1) {
             throw ValidationException::withMessages([
                 'sql' => 'This console does not allow DDL/admin statements.',
@@ -249,7 +314,7 @@ class QueryConsoleController extends Controller
 
         $allowed = array_merge(
             config('sql-console.read_statement_types', []),
-            config('sql-console.write_statement_types', [])
+            $this->writeStatementTypes()
         );
 
         if (!in_array($type, $allowed, true)) {
@@ -259,5 +324,22 @@ class QueryConsoleController extends Controller
         }
 
         return $type;
+    }
+
+    private function writeStatementTypes(): array
+    {
+        $types = config('sql-console.write_statement_types', ['insert', 'update', 'delete']);
+        if (!config('sql-console.allow_truncate', true)) {
+            return array_values(array_filter(
+                $types,
+                static fn (string $type): bool => strtolower($type) !== 'truncate'
+            ));
+        }
+
+        if (!in_array('truncate', $types, true)) {
+            $types[] = 'truncate';
+        }
+
+        return $types;
     }
 }

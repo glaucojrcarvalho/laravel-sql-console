@@ -7,7 +7,9 @@
 - Single SQL statement per execution
 - JSON bindings support (`:named` placeholders)
 - Multi-connection support (MySQL, Oracle, and others you configure)
+- Connection-aware table browser with query templates
 - Read/write statement control
+- Confirmed table truncation (can be disabled)
 - Optional write confirmation checkbox
 - Optional role restriction
 - Standalone UI or embedded in your own app layout
@@ -63,6 +65,7 @@ php artisan vendor:publish --tag=sql-console-config
 ## Routes
 
 - `GET /admin/sql-console` (`admin.sql.console.index`)
+- `GET /admin/sql-console/tables` (`admin.sql.console.tables`)
 - `POST /admin/sql-console/run` (`admin.sql.console.run`)
 
 ## Configuration
@@ -90,6 +93,7 @@ return [
     ],
     'max_rows' => 200,
     'require_write_confirmation' => true,
+    'allow_truncate' => true,
 ];
 ```
 
@@ -99,6 +103,7 @@ Notes:
 - `authorization_mode=allowlist` uses a DB table to decide who can access and write.
 - `authorization_mode=any_auth` allows any authenticated user.
 - Keep this route protected in production.
+- Set `allow_truncate=false` to hide/disable truncation while keeping other writes available.
 
 ## Optional Allowlist Table
 
@@ -151,7 +156,7 @@ php artisan sql-console:revoke 1 --delete
 ## Security Notes
 
 - This tool is intentionally restricted to one SQL statement at a time.
-- DDL/admin keywords are blocked by default (`drop`, `truncate`, `alter`, etc.).
+- Destructive DDL/admin keywords are blocked by default (`drop`, `alter`, etc.). `TRUNCATE` is treated as a write and requires write access and confirmation.
 - Use least-privilege database credentials for any connection exposed here.
 - Prefer `authorization_mode=allowlist` in production to explicitly control users and write access.
 
